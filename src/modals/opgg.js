@@ -1,0 +1,47 @@
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+
+export const modal = {
+    async execute(interaction, modalData){
+        // Get the user inputs
+        const link = interaction.fields.getTextInputValue("link");
+
+        const fetched = interaction.message.embeds[0].data;
+
+        // rebuild the embed
+        const embed = new EmbedBuilder()
+        .setTitle(fetched.title)
+        .setDescription(fetched.description)
+        .addFields(
+            { name: `${fetched.fields[0].name}`, value: `${fetched.fields[0].value}` }
+        );
+
+        console.log(modalData);
+
+        if(modalData[1] == "add") {
+            embed.addFields(
+                { name: `opgg des adversaires`, value: `[lien](${link})` }
+            );
+        } else if(modalData[1] == "edit") {
+            console.log("aaaa");
+            embed.addFields(
+                { name: `${fetched.fields[1].name}`, value: `[lien](${link})` }
+            );
+        }
+
+        const button = new ButtonBuilder()
+        .setCustomId(`opgg|||edit`)
+        .setLabel(`Modifier l'opgg`)
+        .setStyle(ButtonStyle.Secondary);
+
+        const row = new ActionRowBuilder()
+        .setComponents(button);
+
+        await interaction.message.edit({
+            embeds: [embed],
+            components: [row]
+        });
+
+        // Avoid "This interaction failed" message
+        await interaction.deferUpdate();
+    }
+}

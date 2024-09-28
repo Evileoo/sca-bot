@@ -32,6 +32,20 @@ export const event = {
 				console.error(`Error executing ${interaction.customId}`);
 				console.error(error);
 			}
+		} else if(interaction.isModalSubmit()) {
+
+			const modalData = interaction.customId.split("|||");
+
+			const modal = interaction.client.modals.get(modalData[0]);
+
+			if(!modal) console.error(`No modal matching ${interaction.modalData[0]} was found.`);
+
+			try {
+				await modal.execute(interaction, modalData);
+			} catch(error) {
+				console.error(`Error executing ${interaction.customId}`);
+				console.error(error);
+			}
 		} else {
 			interaction.reply({
 				content: `I don't know what you did, but this message isn't supposed to be shown`,

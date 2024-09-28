@@ -24,6 +24,14 @@ for(let button of buttons){
     client.buttons.set(button.split(".")[0], buttonFile.button);
 }
 
+// Create modals collection
+client.modals = new Collection();
+const modals = fs.readdirSync("./src/modals").filter(file => file.endsWith(".js"));
+for(let modal of modals){
+    const modalFile = await import(`./modals/${modal}`);
+    client.modals.set(modal.split(".")[0], modalFile.modal);
+}
+
 // Read events
 const events = fs.readdirSync("./src/events").filter(file => file.endsWith(".js"));
 for(let event of events){
