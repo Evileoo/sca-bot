@@ -17,11 +17,13 @@ export const modal = {
 
         if(modalData[1] == "add") {
             embed.addFields(
-                { name: `opgg des adversaires`, value: `[lien](${link})` }
+                { name: `opgg des adversaires`, value: `[lien](${link})` },
+                { name: `${fetched.fields[1].name}`, value: `${fetched.fields[1].value}` }
             );
         } else if(modalData[1] == "edit") {
             embed.addFields(
-                { name: `${fetched.fields[1].name}`, value: `[lien](${link})` }
+                { name: `${fetched.fields[1].name}`, value: `[lien](${link})` },
+                { name: `${fetched.fields[2].name}`, value: `${fetched.fields[2].value}` }
             );
         }
 

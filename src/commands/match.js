@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, TimestampStyles, time, Embed } from 'discord.js';
+import { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, GuildScheduledEventManager, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, ChannelType } from 'discord.js';
 
 export const command = {
     data: new SlashCommandBuilder()
-    .setName("scrim")
-    .setDescription("Gestion des scrims")
+    .setName("match")
+    .setDescription("Gestion des matchs")
     .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
     .addSubcommand( (subcommand) =>
         subcommand
@@ -51,11 +51,22 @@ export const command = {
             .setDescription("Nom de l'équipe adverse")
             .setRequired(false)
         )
+        .addStringOption( (option) =>
+            option
+            .setName("type")
+            .setDescription("Type de match")
+            .addChoices(
+                { name: `scrim`, value: `scrim` },
+                { name: `showmatch`, value: `showmatch` },
+                { name: `tournoi`, value: `tournoi` },
+                { name: `match`, value: `match` },
+            )
+        )
     )
     .addSubcommand( (subcommand) =>
         subcommand
         .setName("date")
-        .setDescription("Envoie un message avec les horaires d'un scrim")
+        .setDescription("Envoie un message avec les horaires d'un match")
         .addRoleOption( (option) =>
             option
             .setName("equipe")
@@ -65,7 +76,13 @@ export const command = {
         .addStringOption( (option) =>
             option
             .setName("horaire")
-            .setDescription("Heure du scrim")
+            .setDescription("Heure du match")
+            .setRequired(true)
+        )
+        .addChannelOption( (option) =>
+            option
+            .setName("channel")
+            .setDescription("Channel vocal dans lequel les joueurs ont rendez vous")
             .setRequired(true)
         )
         .addStringOption( (option) =>
@@ -80,11 +97,23 @@ export const command = {
             .setDescription("opgg de l'équipe adverse")
             .setRequired(false)
         )
+        .addStringOption( (option) =>
+            option
+            .setName("type")
+            .setDescription("Type de match")
+            .addChoices(
+                { name: `scrim`, value: `scrim` },
+                { name: `showmatch`, value: `showmatch` },
+                { name: `tournoi`, value: `match de tournoi` },
+                { name: `match`, value: `match` },
+            )
+        )
     )
     , async execute(interaction){
 
         const team = interaction.options.getRole("equipe");
         const opponent = interaction.options.getString("adversaire");
+        const type = (interaction.options.getString("type")) ? interaction.options.getString("type") : `match`;
 
         const embed = new EmbedBuilder();
         const row = new ActionRowBuilder();
@@ -92,12 +121,12 @@ export const command = {
         switch(interaction.options.getSubcommand()){
             case "dispo":
 
-                embed.setDescription(`${team}`);
+                embed.setDescription(`<@&${team.id}>`);
 
                 if(opponent) {
-                    embed.setTitle(`Nouveau scrim contre ${opponent}`);
+                    embed.setTitle(`Nouveau ${type} contre ${opponent}`);
                 } else {
-                    embed.setTitle(`Nouveau scrim`);
+                    embed.setTitle(`Nouveau ${type}`);
                 }
 
                 let amount = 0;
@@ -112,18 +141,18 @@ export const command = {
                             const dmy = datetime[0].split("/");
                             const hm = datetime[1].split("h");
 
-                            if(hm.length = 1) hm.push(0);
+                            if(hm.length == 1) hm.push(0);
 
-                            const scrimDateTime = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
+                            const matchDateTime = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
 
                             // Add the field in embed
                             embed.addFields(
-                                { name: `Horaire n°${amount} : <t:${scrimDateTime}:f>`, value: `Disponible:\nPas disponible:\nPeut-être:\n` }
+                                { name: `Horaire n°${amount} : <t:${matchDateTime}:f>`, value: `Disponible:\nPas disponible:\nPeut-être:\n` }
                             )
 
                             // Create the button
                             const button = new ButtonBuilder()
-                            .setCustomId(`scrimH|||${amount}`)
+                            .setCustomId(`match|||${amount}`)
                             .setLabel(`Horaire ${amount}`)
                             .setStyle(ButtonStyle.Success);
 
@@ -137,7 +166,7 @@ export const command = {
                     }
                 }
 
-                interaction.reply({
+                await interaction.reply({
                     embeds: [embed],
                     components: [row]
                 });
@@ -146,6 +175,14 @@ export const command = {
 
                 const horaire = interaction.options.getString("horaire");
                 const opgg = interaction.options.getString("opgg");
+                const channel = interaction.options.getChannel("channel");
+
+                if(channel.ChannelType != ChannelType.Voice){
+                    return interaction.reply({
+                        content: `Le channnel fourni n'est pas un channnel vocal`,
+                        ephemeral: true
+                    });
+                }
 
                 const datetime = horaire.split(" ");
                 const dmy = datetime[0].split("/");
@@ -153,12 +190,13 @@ export const command = {
 
                 if(hm.length = 1) hm.push(0);
 
-                const scrimDateTime = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
+                const matchDateTime1 = new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime();
+                const matchDateTime2 = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
 
                 embed
                 .setDescription(`${team}`)
                 .addFields(
-                    {name: `Scrim le <t:${scrimDateTime}:f>`, value: `Présence en vocal 30 minutes avant le début demandée pour préparer la draft`}
+                    {name: `${type} le <t:${matchDateTime2}:f>`, value: `Présence en vocal 30 minutes avant le début demandée pour préparer la draft`}
                 )
 
                 if(opgg){
@@ -179,16 +217,35 @@ export const command = {
                     row.addComponents(button);
                 }
 
+                console.log(team);
+
+                let eventDescriptionMessage = "";
                 if(opponent) {
-                    embed.setTitle(`Nouveau scrim contre ${opponent}`);
+                    embed.setTitle(`Nouveau ${type} contre ${opponent}`);
+                    eventDescriptionMessage = `${type} contre ${opponent}`
                 } else {
-                    embed.setTitle(`Nouveau scrim`);
+                    embed.setTitle(`Nouveau ${type}`);
                 }
 
-                interaction.reply({
+                const event = new GuildScheduledEventManager(interaction.guild);
+
+                const newEvent = await event.create({
+                    name: `${type} de ${team.name}`,
+                    scheduledStartTime: matchDateTime1,
+                    privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                    entityType: GuildScheduledEventEntityType.Voice,
+                    description: `${eventDescriptionMessage}`,
+                    channel: channel.id
+                });
+
+                console.log(newEvent.id);
+
+                embed.addFields({ name: `Évènement discord`, value: `[lien](https://discord.com/events/${interaction.guild.id}/${newEvent.id})` });
+
+                await interaction.reply({
                     embeds: [embed],
                     components: [row]
-                })
+                });
 
                 break;
             default:

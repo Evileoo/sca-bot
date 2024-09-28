@@ -9,7 +9,7 @@ export const button = {
         // If member doesn't get the pinged role
         if(!interaction.member.roles.cache.get(fetched.description.slice(3, -1))){
             return interaction.reply({
-                content: `Tu n'as pas le rôle ${fetched.description}, tu ne peux donc par conséquent pas participer à ce scrim`,
+                content: `Tu n'as pas le rôle ${fetched.description}, tu ne peux donc par conséquent pas participer à ce match`,
                 ephemeral: true
             });
         }
@@ -26,7 +26,7 @@ export const button = {
 
         for(let i = 0; i < field.length; i++) {
             availability.push(field[i].split(":")[1]);
-            availability[i] = (availability[i].length > 0) ? availability[i].split("\n") : [] ;
+            availability[i] = (availability[i].length > 0) ? availability[i].split(", ") : [] ;
         }
 
         let found = false;
