@@ -9,7 +9,8 @@
   },
   "scripts": {
     "i": "node --env-file .env ./src/index.js",
-    "d": "node --env-file .env ./src/deploy-commands.js"
+    "d": "node --env-file .env ./src/deploy-commands.js",
+    "d2": "node --env-file .env ./src/deploy-dev.js"
   },
   "dependencies": {
     "discord.js": "^14.16.2"

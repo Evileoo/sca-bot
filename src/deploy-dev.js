@@ -14,24 +14,24 @@ async function refresh(){
     }
 
     const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-    
-    // Load commands on Skillcamp Ambition
+
+    // Load commands on dev server
     try{
 
-        console.log(`Deleting all applications (/) commands on Skillcamp Ambition.`);
+        console.log(`Deleting all applications (/) commands on dev server.`);
 
-        await rest.put(Routes.applicationGuildCommands(process.env.APPID, process.env.GUILD), { body: [] })
-	    .then(() => console.log('Successfully deleted all guild commands on Skillcamp Ambition.'))
+        await rest.put(Routes.applicationGuildCommands(process.env.APPID, process.env.GUILDDEV), { body: [] })
+	    .then(() => console.log('Successfully deleted all guild commands on dev server.'))
 	    .catch(console.error);
 
-        console.log(`Refreshing ${commands.length} applications (/) commands on Skillcamp Ambition.`);
+        console.log(`Refreshing ${commands.length} applications (/) commands on dev server.`);
 
         const data = await rest.put(
-            Routes.applicationGuildCommands(process.env.APPID, process.env.GUILD),
+            Routes.applicationGuildCommands(process.env.APPID, process.env.GUILDDEV),
             { body: commands }
         );
 
-        console.log(`Successfully loaded ${data.length} applications (/) commands on Skillcamp Ambition.`);
+        console.log(`Successfully loaded ${data.length} applications (/) commands on dev server.`);
     } catch(err){
         console.error(err);
     }

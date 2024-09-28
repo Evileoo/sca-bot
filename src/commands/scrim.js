@@ -107,26 +107,33 @@ export const command = {
                     if(horaire) {
                         amount++;
 
-                        const datetime = horaire.split(" ");
-                        const dmy = datetime[0].split("/");
-                        const hm = datetime[1].split("h");
+                        try {
+                            const datetime = horaire.split(" ");
+                            const dmy = datetime[0].split("/");
+                            const hm = datetime[1].split("h");
 
-                        if(hm.length = 1) hm.push(0);
+                            if(hm.length = 1) hm.push(0);
 
-                        const scrimDateTime = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
+                            const scrimDateTime = Math.floor(new Date(dmy[2], dmy[1], dmy[0], hm[0], hm[1]).getTime() / 1000);
 
-                        // Add the field in embed
-                        embed.addFields(
-                            { name: `Horaire n°${amount} : <t:${scrimDateTime}:f>`, value: `Disponible:\nPas disponible:\nPeut-être:\n` }
-                        )
+                            // Add the field in embed
+                            embed.addFields(
+                                { name: `Horaire n°${amount} : <t:${scrimDateTime}:f>`, value: `Disponible:\nPas disponible:\nPeut-être:\n` }
+                            )
 
-                        // Create the button
-                        const button = new ButtonBuilder()
-                        .setCustomId(`scrimH|||${amount}`)
-                        .setLabel(`Horaire ${amount}`)
-                        .setStyle(ButtonStyle.Success);
+                            // Create the button
+                            const button = new ButtonBuilder()
+                            .setCustomId(`scrimH|||${amount}`)
+                            .setLabel(`Horaire ${amount}`)
+                            .setStyle(ButtonStyle.Success);
 
-                        row.addComponents(button);
+                            row.addComponents(button);
+                        } catch(error) {
+                            return interaction.reply({
+                                content: `date mal saisie.\nLe format de la date doit ressembler à ceci : \`05/06/2023 15h30\``,
+                                ephemeral: true
+                            });
+                        }
                     }
                 }
 
